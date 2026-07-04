@@ -13,7 +13,16 @@ const productArray = [
   { id: crypto.randomUUID(), name: "Samsung S26 Ultra", price: 1200 },
 ];
 
-const cart = [];
+const cart = JSON.parse(localStorage.getItem("cart")) || [];
+document.addEventListener("DOMContentLoaded", (e) => {
+  let myPrice = JSON.parse(localStorage.getItem("total"));
+  if (myPrice === null) {
+    totalPrice.textContent = `$0.00`;
+  } else {
+    totalPrice.textContent = `$${myPrice}`;
+  }
+});
+displayCart();
 
 productArray.forEach((product) => {
   productDiv = document.createElement("div");
@@ -32,7 +41,9 @@ container.addEventListener("click", (e) => {
     addToCart(matchedProduct);
     cartTotalDisplayMsg.innerHTML = "";
     displayCart();
-    calculateTotalPrice();
+    totalPrice.textContent = `$${calculateTotalPrice()}`;
+    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("total", calculateTotalPrice());
   } else if (e.target.classList.contains("btn-del")) {
     let htmlId = e.target.parentElement.dataset.id;
     let matchedProduct = cart.find((item) => {
@@ -45,10 +56,13 @@ container.addEventListener("click", (e) => {
     console.log(cart);
     cartTotalDisplayMsg.innerHTML = "";
     displayCart();
-    calculateTotalPrice();
+    totalPrice.textContent = `$${calculateTotalPrice()}`;
+    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("total", calculateTotalPrice());
   } else if (e.target.classList.contains("checkout-btn")) {
     setTimeout(() => {
       alert(`Your Checkout is Successful.`);
+      localStorage.clear();
       window.location.reload();
     }, 100);
   }
@@ -61,17 +75,16 @@ function addToCart(item) {
 function displayCart() {
   if (cart.length === 0) {
     emptyCartDisplayMsg.classList.remove("hidden");
-  }
-  else {
+  } else {
     cart.forEach((item) => {
-    emptyCartDisplayMsg.classList.add("hidden");
-    cartTotalDisplayMsg.classList.remove("hidden");
-    let cartDiv = document.createElement("div");
-    cartDiv.classList.add("product");
-    cartDiv.dataset.id = item.id;
-    cartDiv.innerHTML = `<span> ${item.name} - $${item.price} </span> <button class = "btn-del"> Remove </button>`;
-    cartTotalDisplayMsg.appendChild(cartDiv);
-  });
+      emptyCartDisplayMsg.classList.add("hidden");
+      cartTotalDisplayMsg.classList.remove("hidden");
+      let cartDiv = document.createElement("div");
+      cartDiv.classList.add("product");
+      cartDiv.dataset.id = item.id;
+      cartDiv.innerHTML = `<span> ${item.name} - $${item.price} </span> <button class = "btn-del"> Remove </button>`;
+      cartTotalDisplayMsg.appendChild(cartDiv);
+    });
   }
 }
 
@@ -79,6 +92,5 @@ function calculateTotalPrice() {
   let finalPrice = cart.reduce((acc, value) => {
     return acc + value.price;
   }, 0);
-  totalPrice.textContent = `$${finalPrice}`;
+  return finalPrice;
 }
-
